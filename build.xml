@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<project name="Roll-caller" default="build">
+    <property name="src.dir" value="src"/> 
+    <property name="bin.dir" value="bin"/>
+    <property name="jar.file" value="Roll-caller.jar"/>
+    
+    
+    <target name="build">
+        <mkdir dir="${bin.dir}" />
+        <javac srcdir="${src.dir}" destdir="${bin.dir}" includeantruntime="false"/>
+    </target>
+    
+
+    <target name="jar" depends="build">
+        <jar jarfile="${jar.file}" manifest="MANIFEST.MF" basedir="${bin.dir}"/>
+    </target>
+
+
+    <target name="cleanbuild">
+        <delete dir="${bin.dir}"/>
+    </target>
+
+
+    <target name="cleanjar">
+        <delete file="${jar.file}"/>
+    </target>
+
+
+    <target name="clean" depends="cleanbuild, cleanjar"/>
+
+
+    <target name="run" depends="build">
+        <java classname="ntucsie.RollCall" fork="true">
+            <classpath path="${bin.dir}"/>
+        </java>
+    </target>
+
+</project>
+ 
