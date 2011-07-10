@@ -10,33 +10,32 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
- * 
+ * A file set needed by a roll call, including a file recording the name list,
+ * and a file recording the picked status.
  * @author cw.ahbong
  */
 public class RollCallFileSet {
     private File _nameListFile;
-    private File _pickedListFile;
+    private File _pickedStatusFile;
     
-    public RollCallFileSet(File nameList) {
-        _nameListFile = nameList;
-        _pickedListFile = new File(_nameListFile.getName()+".picked");
+    public RollCallFileSet(File nameListFile) {
+        this(nameListFile, new File(nameListFile.getName()+".picked"));
     }
     
     public RollCallFileSet(File nameListFile, File pickedListFile) {
         _nameListFile = nameListFile;
-        _pickedListFile = pickedListFile;
+        _pickedStatusFile = pickedListFile;
     }
     
-    public List<Boolean> createPickedList()
+    public Map<String, Boolean> createPickedStatus()
     throws IOException {
-        int size = readNameList().size();
-        List<Boolean> lb = new ArrayList<Boolean>(size);
-        for(int i=0; i<size; ++i)
-            lb.add(false);
-        writePickedList(lb);
-        return lb;
+        Map<String, Boolean> ps = new TreeMap<String, Boolean>();
+        writePickedStatus(ps);
+        return ps;
     }
     
     public List<String> readNameList()
@@ -46,43 +45,51 @@ public class RollCallFileSet {
                         new FileInputStream(_nameListFile), "big5"));
         String line;
         while((line=br.readLine())!=null) {
-            nameList.add(line);
+            line = line.trim();
+            if(!line.equals("")) {
+                nameList.add(line);
+            }
         }
         br.close();
         return nameList;
     }
     
-    public List<Boolean> readPickedList()
+    public Map<String, Boolean> readPickedList()
     throws IOException {
-        List<Boolean> pickedStatusList = new ArrayList<Boolean>();
+        Map<String, Boolean> pickedStatusMap = new TreeMap<String, Boolean>();
         BufferedReader br = new BufferedReader(new InputStreamReader(
-                new FileInputStream(_pickedListFile), "big5"));
+                new FileInputStream(_pickedStatusFile), "big5"));
         String line;
         while((line=br.readLine())!=null) {
-            switch(Integer.parseInt(line)) {
+            String data[] = line.split("\t");
+            if(data.length!=2)
+            {
+                throw new FileCorruptedException(_pickedStatusFile);
+            }
+            switch(Integer.parseInt(data[1])) {
                 case 0:
-                    pickedStatusList.add(false);
+                    pickedStatusMap.put(data[0], false);
                     break;
                 case 1:
-                    pickedStatusList.add(true);
+                    pickedStatusMap.put(data[0], true);
                     break;
                 default:
-                    throw new IOException("FileCorrupted"); // FileCorruptException
+                    throw new FileCorruptedException(_pickedStatusFile);
             }
         }
         br.close();
-        return pickedStatusList;
+        return pickedStatusMap;
     }
     
-    public void writePickedList(List<Boolean> pickedList)
+    public void writePickedStatus(Map<String, Boolean> pickedStatus)
     throws IOException{
-        PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(_pickedListFile, false),"big5"));
-        for(Boolean b: pickedList) {
-            if(b) {
-                pw.println("1");
+        PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(_pickedStatusFile, false),"big5"));
+        for(String name: pickedStatus.keySet()) {
+            if(pickedStatus.get(name)) {
+                pw.println(name + "\t1");
             }
             else {
-                pw.println("0");
+                pw.println(name + "\t0");
             }
         }
         pw.close();

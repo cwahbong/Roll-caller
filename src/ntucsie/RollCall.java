@@ -1,11 +1,20 @@
 package ntucsie;
 
-import java.io.FileNotFoundException;
 import javax.swing.SwingUtilities;
 
+/**
+ * The entry point.
+ * @author  cw.ahbong
+ * @see     RollCallUi
+ */
 public class RollCall {
-    public static void main(String args[]) throws FileNotFoundException {
+    /**
+     * The entry point.
+     * @param args      No effect.
+     */
+    public static void main(String args[]) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new RollCallUi();
             }

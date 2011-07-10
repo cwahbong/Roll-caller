@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <project name="Roll-caller" default="build">
-    <property name="src.dir" value="src"/> 
+    <property name="src.dir" value="src"/>
+    <property name="doc.dir" value="doc"/>
     <property name="bin.dir" value="bin"/>
     <property name="jar.file" value="Roll-caller.jar"/>
     
@@ -8,11 +9,29 @@
     <target name="build">
         <mkdir dir="${bin.dir}" />
         <javac srcdir="${src.dir}" destdir="${bin.dir}" includeantruntime="false"/>
+        <copy file="play.png" todir="${bin.dir}"/>
     </target>
     
 
     <target name="jar" depends="build">
-        <jar jarfile="${jar.file}" manifest="MANIFEST.MF" basedir="${bin.dir}"/>
+        <jar jarfile="${jar.file}">
+            <manifest>
+                <attribute name="Main-Class" value="ntucsie.RollCall"/>
+            </manifest>
+            <fileset dir="${bin.dir}"/>
+            <fileset file="play.png"/>
+        </jar>
+    </target>
+
+
+    <target name="doc">
+        <javadoc
+            sourcepath="${src.dir}"
+            destdir="${doc.dir}"
+            linksource="true"
+            author="true"
+            windowtitle="Roll-caller">
+        </javadoc>
     </target>
 
 
@@ -26,13 +45,22 @@
     </target>
 
 
-    <target name="clean" depends="cleanbuild, cleanjar"/>
+    <target name="cleandoc">
+        <delete dir="${doc.dir}"/>
+    </target>
+
+
+    <target name="clean" depends="cleanbuild, cleanjar, cleandoc"/>
 
 
     <target name="run" depends="build">
         <java classname="ntucsie.RollCall" fork="true">
             <classpath path="${bin.dir}"/>
         </java>
+    </target>
+
+    <target name="runjar" depends="jar">
+        <java jar="${jar.file}" fork="true"/>
     </target>
 
 </project>
